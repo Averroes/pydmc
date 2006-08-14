@@ -65,8 +65,12 @@ class ReplacingOutputFile(object):
         self.close()
 
 def filter_file(infile, outfile, cmd, replace=False):
-    """Filter a file using the python function cmd, optionally replacing
-    the original file."""
+    """Filter a file using the python function `cmd`, optionally replacing
+    the original file.
+
+    If `infile` is `None`, `sys.stdin` is used. If `outfile` is `None`,
+    `sys.stdout` is used.
+    """
     if infile is None:
         in_fo = sys.stdin
         replace = False
