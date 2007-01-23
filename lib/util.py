@@ -1,6 +1,15 @@
-__all__ = ['is_string', 'has_length', 'is_sequence', 'colourise']
+__all__ = ['identity', 'null',
+           'is_string', 'has_length', 'is_sequence', 'colourise']
 
 import sys
+
+def identity(x):
+    """Identity function: returns the argument passed."""
+    return x
+
+def null(*args, **kw):
+    """Null function: does nothing."""
+    pass
 
 def is_string(s):
     """Test whether s is a string (byte or Unicode).
