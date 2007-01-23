@@ -3,8 +3,8 @@ Different ways to count things.
 
 Iterators
 ---------
-iter_subset(objs, )     -- all subsets of objs with k elements
-iter_multiset(objs,k)   -- all multisets of objs with k elements.
+iter_subset(objs, k)    -- all subsets of objs with k elements
+iter_multiset(objs, k)  -- all multisets of objs with k elements.
                            Elements can be repeated.
 iter_symmetric(shape, symmetries)
                         -- indices with the given symmetries
@@ -98,13 +98,13 @@ class iter_subset(_KSomeset):
 
 def combinations(objs, k):
     """Iterator for all combinations of objs taken k at a time.
-    objs may be an integer, then range(objs) is used.
+    If objs is an integer, range(objs) is used.
 
     This is the same as iter_subset.
     """
     return iter_subset(objs, k)
 
-def _test_KSubset():
+def _test_Subset():
     results = [ [(1,1), (0,)],
                 [(2,0), ()],
                 [(2,1), (0,), (1,)],
@@ -126,14 +126,14 @@ def _test_KSubset():
 
     assert len(iter_subset(20,5)) == 15504
 
-class iter_multiset(_KSomeset):
+class MultisetIterator(_KSomeset):
     """Iterator over the multisets of length k.
 
     A multiset is a subset with repeated members.
 
     Example:
 
-    >>> list(iter_multiset(3, 2)
+    >>> list(iter_multiset(3, 2))
     [(0, 0), (0, 1), (0, 2), (1, 1), (1, 2), (2, 2)]
     >>> [''.join(s) for s in iter_multiset("abc", 3)]
     ['aaa', 'aab', 'aac', 'abb', 'abc', 'acc', 'bbb', 'bbc', 'bcc', 'ccc']
@@ -161,7 +161,11 @@ class iter_multiset(_KSomeset):
     def length(self):
         return binomial(self.n + self.k - 1, self.k)
 
-def _test_KMultiset():
+def iter_multiset(objs, k):
+    return MultisetIterator(objs, k)
+iter_multiset.__doc__ = MultisetIterator.__doc__
+
+def _test_Multiset():
     results = [ [(0,0), ()],
                 [(1,0), ()],
                 [(1,1), (0,)],
