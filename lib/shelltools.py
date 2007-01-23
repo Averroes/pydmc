@@ -1,6 +1,8 @@
-import os, os.path
+import os
 import sys
 import tempfile
+
+from pydmc.util import is_string, null
 
 def quote_shell(s):
     """Quote a string for passing as an argument to a shell command.
@@ -64,37 +66,50 @@ class ReplacingOutputFile(object):
     def __del__(self):
         self.close()
 
-def filter_file(infile, outfile, cmd, replace=False):
+def open_file(filename, mode, default):
+    if filename is None:
+        fo = default
+        closer = null
+    elif is_string(filename):
+        fo = open(filename, mode)
+        closer = fo.close
+    else:
+        fo = filename
+        closer = null
+    return fo, closer
+
+def filter_file(cmd, infile=None, outfile=None, replace=False):
     """Filter a file using the python function `cmd`, optionally replacing
     the original file.
 
     If `infile` is `None`, `sys.stdin` is used. If `outfile` is `None`,
     `sys.stdout` is used.
+
+    `cmd` should return `True` if changes were made.
     """
-    if infile is None:
-        in_fo = sys.stdin
-        replace = False
+    if replace:
+        if infile is None:
+            raise ValueError("can't replace sys.stdin")
+        if outfile is not None:
+            raise ValueError("can't specify an output file when replace=True")
+    in_fo, close_in = open_file(infile, 'r', sys.stdin)
+    if replace:
+        out_fo = ReplacingOutputFile(in_fo.name)
+        close_out = out_fo.close
     else:
-        in_fo = open(infile, 'r')
-    if outfile is None:
-        out_fo = sys.stdout
-    elif replace:
-        out_fo = ReplacingOutputFile(infile)
-    else:
-        out_fo = open(outfile, 'w')
+        out_fo, close_out = open_file(outfile, 'w', sys.stdout)
     try:
         try:
             changes_made = cmd(in_fo, out_fo)
         except:
-            # don't overwrite input file if there was an error
-            if out_fo != sys.stdout: out_fo.close()
+            close_out()
             raise
     finally:
-        if in_fo != sys.stdin: in_fo.close()
+        close_in()
     if replace and changes_made:
         out_fo.close(replace=True)
     else:
-        out_fo.close()
+        close_out()
 
 if __name__ == '__main__':
     import pydmc.simpletest
