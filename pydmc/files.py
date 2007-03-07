@@ -310,6 +310,7 @@ class WriteLockedFile(object):
             file_name = fo.name
         if backup_file is None:
             backup_file = file_name + '~'
+        self.keep_backup = keep_backup
         self.backup_file = backup_file
 
         self.name = file_name
@@ -449,13 +450,13 @@ class writelock(object):
         return False
 
 class atomicwritelock(object):
-    def __init__(self, filename, keep_backup=True):
-        self.filename = filename
+    def __init__(self, fo, keep_backup=True):
+        self.fo = fo
         self.keep_backup = keep_backup
         self._fo = None
 
     def __enter__(self):
-        self._fo = WriteLockedFile(self.filename, keep_backup=self.keep_backup)
+        self._fo = WriteLockedFile(self.fo, keep_backup=self.keep_backup)
         return self._fo
 
     def __exit__(self, t, v, tb):
