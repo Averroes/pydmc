@@ -397,7 +397,7 @@ class readlock(object):
     """
     def __init__(self, filename, mode='rb'):
         self.filename = filename
-        if not mode.startwith('r') or mode != 'U':
+        if not mode.startswith('r') and mode != 'U':
             raise ValueError("can only lock on reading")
         self.mode = mode
         self._fo = None
@@ -412,7 +412,8 @@ class readlock(object):
             return self._fo, None
 
     def __exit__(self, t, v, tb):
-        self._fo.close()
+        if self._fo:
+            self._fo.close()
         return False
 
 class writelock(object):
