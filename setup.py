@@ -9,7 +9,6 @@ setup(name="pydmc",
       author_email="david.m.cooke@gmail.com",
       license="GPL",
 
-      package_dir = {'pydmc' : 'lib'},
       packages = ['pydmc'],
       ext_modules = [
           Extension('pydmc._count', ['src/_count.pyx']),
