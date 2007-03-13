@@ -3,11 +3,16 @@ __all__ = ['DataFileError', 'Column', 'FloatCol', 'IntCol', 'StrCol',
 
 import re
 import numpy
+import datetime
 
 try:
-    from pysqlite2 import dbapi2 as sqlite
+    # python 2.5
+    from sqlite3 import dbapi2 as sqlite
 except ImportError:
-    pass
+    try:
+        from pysqlite2 import dbapi2 as sqlite
+    except ImportError:
+        pass
 
 from pydmc.util import is_string, is_sequence
 
@@ -109,7 +114,6 @@ def coerce_columns(columns):
     return new_columns
 
 def timestamp():
-    import datetime
     now = datetime.datetime.now()
     value = now.isoformat(' ')
     return value
@@ -124,6 +128,7 @@ class DataWriter(object):
         self.column_descriptions = columns
         self.metadata = {}
         self._have_added_column_descriptions = False
+        self._open_time = datetime.datetime.now()
 
     def add_metadata(self, key, value, fmt='%r'):
         if fmt.count('%') != 1:
@@ -140,6 +145,13 @@ class DataWriter(object):
         'timestamp'."""
         value = timestamp()
         self.add_metadata(key, value)
+
+    def add_elapsed(self, key='elapsed'):
+        """Add the elapsed time since the file was created.
+        The key name defaults to 'elapsed'.
+        """
+        now = datetime.datetime.now()
+        self.add_metadata(key, str(now - self._open_time))
 
     def determine_columns(self, data):
         """Guess column types from the data.
@@ -206,6 +218,17 @@ class DataWriter(object):
 
     def close(self):
         self.finish()
+
+class NullDataWriter(DataWriter):
+    def __init__(self):
+        super(NullDataWriter, self).__init__()
+
+    def append(self, *data):
+        pass
+
+    def write_all(self, data):
+        pass
+
 
 class TextDataWriter(DataWriter):
     """Write data to a text file in a easily-parsable format.
