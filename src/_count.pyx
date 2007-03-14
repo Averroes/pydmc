@@ -23,6 +23,13 @@ cdef extern from "Python.h":
 
     int PyDict_Size(object o)
 
+    void PyErr_SetNone(PyObject *o)
+    PyObject *PyExc_StopIteration
+
+cdef int raiseStopIteration() except -1:
+    PyErr_SetNone(PyExc_StopIteration)
+    return -1
+
 cdef class _IntArray:
     cdef unsigned int length
     cdef int *data
@@ -195,10 +202,10 @@ cdef class LexicographicIterator:
             self.generator_state = 1
             return self._current()
         elif self.generator_state == 2:
-            raise StopIteration
+            raiseStopIteration()
         self._next()
         if self.generator_state == 2:
-            raise StopIteration()
+            raiseStopIteration()
         return self._current()
 
 # This is taken from Algorithm 2.14 in [KS]. Modified to use 0-based indexing.
@@ -272,10 +279,10 @@ cdef class PermutationIterator:
                 self.generator_state = 1
             return self._current()
         elif self.generator_state == 2:
-            raise StopIteration
+            raiseStopIteration()
         self._next()
         if self.generator_state == 2:
-            raise StopIteration
+            raiseStopIteration()
         return self._current()
 
 # For speed, we implement some of the counting permutations here
