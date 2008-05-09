@@ -16,6 +16,14 @@ except ImportError:
 
 from pydmc.util import is_string, is_sequence
 
+try:
+    any
+except NameError:
+    def any(s):
+        return reduce(lambda x,y:x or y, s, False)
+    def all(s):
+        return reduce(lambda x,y:x and y, s, True)
+
 class DataFileError(Exception):
     pass
 
@@ -74,9 +82,8 @@ class FloatCol(Column):
         # special case so that we always have a decimal point if it comes out
         # as an integer.
         s = self._format % d
-        if not re.match('-?[0-9]+$', s):
-            return s
-        s += '.0'
+        if re.match(r'^-?[0-9]+$', s):
+            s += '.0'
         return s
 
     def to_array(self, d):
@@ -170,7 +177,9 @@ class DataWriter(object):
             else:
                 t = type(d)
                 l = 1
-            if t is float:
+            if isinstance(d, float):
+                columns.append(FloatCol(name, length=l))
+            elif is_sequence(d) and any(isinstance(c, float) for c in d):
                 columns.append(FloatCol(name, length=l))
             else:
                 columns.append(Column(name, type=t, length=l))
@@ -197,6 +206,8 @@ class DataWriter(object):
         if len(self.column_descriptions) != len(data):
             raise DataFileError('data does not match column description')
 
+    # Subclasses are responsible for overriding this to actually
+    # append the data to something
     def append(self, *data):
         self._check_column_descriptions(data)
         for c, d in zip(self.column_descriptions, data):
@@ -642,7 +653,11 @@ class TextDataReader(object):
             return data
 
     def __iter__(self):
-        return self.data
+        """Return an iterator over the datafile.
+
+        Actually, this is just iter(self.data).
+        """
+        return iter(self.data)
 
 class ParameterWriter(object):
     def __init__(self):
@@ -750,7 +765,7 @@ def tokenise_by_whitespace(fo_iter):
             yield t
 
 def _readScalar(line):
-    name, typecode, s_value = rest.split(None, 2)
+    name, typecode, s_value = line.split(None, 2)
     if typecode == 'int':
         value = int(s_value)
     elif typecode == 'float':
@@ -767,7 +782,7 @@ def _readScalar(line):
     return name, value
 
 def _readArray(line, fo_iter):
-    name, typecode, s_ndim, s_shape = rest.split(None, 3)
+    name, typecode, s_ndim, s_shape = line.split(None, 3)
     ndim = int(s_ndim)
     shape = [int(s) for s in s_shape.split()]
     if typecode == 'int':
