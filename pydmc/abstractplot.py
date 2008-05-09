@@ -1,7 +1,6 @@
 #! /usr/bin/env python
 
 import re
-import sys
 from copy import copy
 
 attributes_pat = re.compile('#\s*([a-zA-Z_][a-zA-Z_0-9]*):\s*(.*)$')
@@ -111,8 +110,8 @@ class Data(object):
 
     def write_xml(self, xml):
         xml.tag('data', columns=self.ncols)
-        fmttd = [ repr(x) for x in d ]
         for d in self.data:
+            fmttd = [ repr(x) for x in d ]
             xml.textline(' '.join(fmttd))
         xml.endtag('data')
 
