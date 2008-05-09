@@ -362,10 +362,10 @@ def sort2_int(int a, int b):
 def sort3_int(int s0, int s1, int s2):
     if s0 > s2:
         s0, s2 = s2, s0
-        if s1 > s2:
-            s1, s2, = s2, s1
-    elif s0 > s1:
+    if s0 > s1:
         s0, s1 = s1, s0
+    if s1 > s2:
+        s1, s2 = s2, s1
     return s0, s1, s2
 
 def sort4_int(int i0, int i1, int i2, int i3):
