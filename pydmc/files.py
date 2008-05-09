@@ -1,5 +1,5 @@
 import fcntl
-import os, os.path, errno
+import os.path, errno
 import time
 import tempfile
 import shutil
@@ -70,7 +70,7 @@ class LockFile(object):
                     return
                 statfailed = 0
                 # If there is a lockfile and it is invalid, remove the lockfile
-                if not lockfile_check(lockfile):
+                if not self.check():
                     try: os.unlink(lockfile)
                     except OSError: pass
                     dontsleep = True
